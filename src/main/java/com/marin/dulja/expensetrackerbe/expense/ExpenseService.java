@@ -37,12 +37,12 @@ public class ExpenseService {
 
     @Transactional
     public ExpenseResponse create(ExpenseRequest req, String clientId) {
-        Expense saved = repository.save(Expense.builder()
-                .clientId(clientId)
-                .title(req.title())
-                .amount(req.amount())
-                .date(req.date())
-                .build());
+        Expense e = new Expense();
+        e.setClientId(clientId);
+        e.setTitle(req.title());
+        e.setAmount(req.amount());
+        e.setDate(req.date());
+        Expense saved = repository.save(e);
         return toResponse(saved);
     }
 

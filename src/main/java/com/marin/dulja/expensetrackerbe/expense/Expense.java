@@ -1,17 +1,11 @@
 package com.marin.dulja.expensetrackerbe.expense;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 @Entity
 @Table(name = "expenses", indexes = {
         @Index(name = "idx_expenses_client_id", columnList = "client_id")
@@ -36,7 +30,53 @@ public class Expense {
     @Column(nullable = false)
     private LocalDate date;
 
-    // Explicit setter to avoid potential Lombok edge cases on some build environments
+    public Expense() {
+    }
+
+    public Expense(UUID id, String clientId, String title, BigDecimal amount, LocalDate date) {
+        this.id = id;
+        this.clientId = clientId;
+        this.title = title;
+        this.amount = amount;
+        this.date = date;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public BigDecimal getAmount() {
+        return amount;
+    }
+
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
     public void setDate(LocalDate date) {
         this.date = date;
     }
