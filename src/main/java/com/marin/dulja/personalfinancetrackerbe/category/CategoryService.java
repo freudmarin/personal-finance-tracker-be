@@ -44,6 +44,11 @@ public class CategoryService {
     public CategoryResponse update(UUID id, CategoryRequest req, String clientId) {
         Category c = repository.findByIdAndClientId(id, clientId)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
+        // Check for duplicate name (excluding current category)
+        boolean duplicate = repository.existsByClientIdAndName(clientId, req.name()) && !c.getName().equals(req.name());
+        if (duplicate) {
+            throw new DuplicateCategoryException(clientId, req.name());
+        }
         c.setName(req.name());
         Category saved = repository.save(c);
         return new CategoryResponse(saved.getId(), saved.getName());
