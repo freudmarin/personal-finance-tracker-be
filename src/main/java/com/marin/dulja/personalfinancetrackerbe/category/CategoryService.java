@@ -30,6 +30,9 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponse create(CategoryRequest req, String clientId) {
+        if (repository.existsByClientIdAndName(clientId, req.name())) {
+            throw new DuplicateCategoryException(clientId, req.name());
+        }
         Category c = new Category();
         c.setClientId(clientId);
         c.setName(req.name());

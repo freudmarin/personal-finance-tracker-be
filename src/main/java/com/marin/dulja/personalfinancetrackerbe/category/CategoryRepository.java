@@ -11,4 +11,5 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
     Optional<Category> findByIdAndClientId(UUID id, String clientId);
     boolean existsByIdAndClientId(UUID id, String clientId);
     long deleteByIdAndClientId(UUID id, String clientId);
+    boolean existsByClientIdAndName(String clientId, String name);
 }

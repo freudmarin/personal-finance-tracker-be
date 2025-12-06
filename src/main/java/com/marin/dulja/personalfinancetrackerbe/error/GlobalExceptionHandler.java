@@ -1,6 +1,7 @@
 package com.marin.dulja.personalfinancetrackerbe.error;
 
 import com.marin.dulja.personalfinancetrackerbe.category.CategoryNotFoundException;
+import com.marin.dulja.personalfinancetrackerbe.category.DuplicateCategoryException;
 import com.marin.dulja.personalfinancetrackerbe.transaction.TransactionNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,14 @@ public class GlobalExceptionHandler {
         body.put("error", "not_found");
         body.put("message", ex.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(DuplicateCategoryException.class)
+    public ResponseEntity<Map<String, Object>> handleDuplicate(DuplicateCategoryException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("error", "conflict");
+        body.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
