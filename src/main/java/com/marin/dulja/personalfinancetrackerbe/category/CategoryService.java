@@ -3,6 +3,7 @@ package com.marin.dulja.personalfinancetrackerbe.category;
 import com.marin.dulja.personalfinancetrackerbe.category.dto.CategoryRequest;
 import com.marin.dulja.personalfinancetrackerbe.category.dto.CategoryResponse;
 import com.marin.dulja.personalfinancetrackerbe.transaction.TransactionRepository;
+import com.marin.dulja.personalfinancetrackerbe.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,33 +22,32 @@ public class CategoryService {
         this.transactionRepository = transactionRepository;
     }
 
-    public List<CategoryResponse> list(String clientId) {
-        return repository.findAllByClientIdOrderByNameAsc(clientId)
+    public List<CategoryResponse> list(User user) {
+        return repository.findAllByUserOrderByNameAsc(user)
                 .stream()
                 .map(c -> new CategoryResponse(c.getId(), c.getName()))
                 .toList();
     }
 
     @Transactional
-    public CategoryResponse create(CategoryRequest req, String clientId) {
-        if (repository.existsByClientIdAndName(clientId, req.name())) {
-            throw new DuplicateCategoryException(clientId, req.name());
+    public CategoryResponse create(CategoryRequest req, User user) {
+        if (repository.existsByUserAndName(user, req.name())) {
+            throw new DuplicateCategoryException(user.getId().toString(), req.name());
         }
         Category c = new Category();
-        c.setClientId(clientId);
+        c.setUser(user);
         c.setName(req.name());
         Category saved = repository.save(c);
         return new CategoryResponse(saved.getId(), saved.getName());
     }
 
     @Transactional
-    public CategoryResponse update(UUID id, CategoryRequest req, String clientId) {
-        Category c = repository.findByIdAndClientId(id, clientId)
+    public CategoryResponse update(UUID id, CategoryRequest req, User user) {
+        Category c = repository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new CategoryNotFoundException(id));
-        // Check for duplicate name (excluding current category)
-        boolean duplicate = repository.existsByClientIdAndName(clientId, req.name()) && !c.getName().equals(req.name());
+        boolean duplicate = repository.existsByUserAndName(user, req.name()) && !c.getName().equals(req.name());
         if (duplicate) {
-            throw new DuplicateCategoryException(clientId, req.name());
+            throw new DuplicateCategoryException(user.getId().toString(), req.name());
         }
         c.setName(req.name());
         Category saved = repository.save(c);
@@ -55,12 +55,10 @@ public class CategoryService {
     }
 
     @Transactional
-    public void delete(UUID id, String clientId) {
-        boolean exists = repository.existsByIdAndClientId(id, clientId);
+    public void delete(UUID id, User user) {
+        boolean exists = repository.existsByIdAndUser(id, user);
         if (!exists) throw new CategoryNotFoundException(id);
-        // First delete all transactions that belong to this client and reference the category
-        transactionRepository.deleteByClientIdAndCategoryRef_Id(clientId, id);
-        // Then delete the category itself
-        repository.deleteByIdAndClientId(id, clientId);
+        transactionRepository.deleteByUserAndCategoryRef_Id(user, id);
+        repository.deleteByIdAndUser(id, user);
     }
 }

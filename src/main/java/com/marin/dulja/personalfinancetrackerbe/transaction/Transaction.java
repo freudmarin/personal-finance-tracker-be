@@ -1,6 +1,7 @@
 package com.marin.dulja.personalfinancetrackerbe.transaction;
 
 import com.marin.dulja.personalfinancetrackerbe.category.Category;
+import com.marin.dulja.personalfinancetrackerbe.user.User;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -9,7 +10,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "transactions", indexes = {
-        @Index(name = "idx_transactions_client_id", columnList = "client_id")
+        @Index(name = "idx_transactions_user_id", columnList = "user_id"),
+        @Index(name = "idx_transactions_user_id_type", columnList = "user_id,type")
 })
 public class Transaction {
 
@@ -19,8 +21,9 @@ public class Transaction {
     @Column(nullable = false)
     private UUID id;
 
-    @Column(name = "client_id", nullable = false, length = 100)
-    private String clientId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -46,9 +49,9 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(UUID id, String clientId, String title, BigDecimal amount, LocalDate date) {
+    public Transaction(UUID id, User user, String title, BigDecimal amount, LocalDate date) {
         this.id = id;
-        this.clientId = clientId;
+        this.user = user;
         this.title = title;
         this.amount = amount;
         this.date = date;
@@ -62,12 +65,12 @@ public class Transaction {
         this.id = id;
     }
 
-    public String getClientId() {
-        return clientId;
+    public User getUser() {
+        return user;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getTitle() {

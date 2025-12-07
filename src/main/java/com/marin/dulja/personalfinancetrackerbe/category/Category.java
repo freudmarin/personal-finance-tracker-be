@@ -1,13 +1,14 @@
 package com.marin.dulja.personalfinancetrackerbe.category;
 
+import com.marin.dulja.personalfinancetrackerbe.user.User;
 import jakarta.persistence.*;
 
 import java.util.UUID;
 
 @Entity
 @Table(name = "categories", indexes = {
-        @Index(name = "idx_categories_client_id", columnList = "client_id"),
-        @Index(name = "uk_categories_client_name", columnList = "client_id,name", unique = true)
+        @Index(name = "idx_categories_user_id", columnList = "user_id"),
+        @Index(name = "uk_categories_user_name", columnList = "user_id,name", unique = true)
 })
 public class Category {
 
@@ -17,8 +18,9 @@ public class Category {
     @Column(nullable = false)
     private UUID id;
 
-    @Column(name = "client_id", nullable = false, length = 100)
-    private String clientId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(nullable = false, length = 100)
     private String name;
@@ -31,12 +33,12 @@ public class Category {
         this.id = id;
     }
 
-    public String getClientId() {
-        return clientId;
+    public User getUser() {
+        return user;
     }
 
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
     public String getName() {

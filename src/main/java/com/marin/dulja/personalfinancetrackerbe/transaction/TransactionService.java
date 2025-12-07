@@ -1,11 +1,12 @@
 package com.marin.dulja.personalfinancetrackerbe.transaction;
 
-import com.marin.dulja.personalfinancetrackerbe.category.dto.CategoryResponse;
-import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionRequest;
-import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionResponse;
 import com.marin.dulja.personalfinancetrackerbe.category.Category;
 import com.marin.dulja.personalfinancetrackerbe.category.CategoryNotFoundException;
 import com.marin.dulja.personalfinancetrackerbe.category.CategoryRepository;
+import com.marin.dulja.personalfinancetrackerbe.category.dto.CategoryResponse;
+import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionRequest;
+import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionResponse;
+import com.marin.dulja.personalfinancetrackerbe.user.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -54,47 +55,45 @@ public class TransactionService {
         return String.join(",", cleaned);
     }
 
-    public List<TransactionResponse> list(String clientId) {
-        return repository.findAllByClientIdOrderByDateDesc(clientId)
+    public List<TransactionResponse> list(User user) {
+        return repository.findAllByUserOrderByDateDesc(user)
                 .stream()
                 .map(TransactionService::toResponse)
                 .toList();
     }
 
-    public List<TransactionResponse> list(String clientId, String type, UUID categoryId) {
+    public List<TransactionResponse> list(User user, String type, UUID categoryId) {
         List<Transaction> items;
         if (type != null && !type.isBlank()) {
             if (categoryId != null) {
-                items = repository.findAllByClientIdAndTypeAndCategoryRef_IdOrderByDateDesc(clientId, type, categoryId);
+                items = repository.findAllByUserAndTypeAndCategoryRef_IdOrderByDateDesc(user, type, categoryId);
             } else {
-                items = repository.findAllByClientIdAndTypeOrderByDateDesc(clientId, type);
+                items = repository.findAllByUserAndTypeOrderByDateDesc(user, type);
             }
         } else {
-            // fallback to existing behavior
             items = (categoryId != null)
-                    ? repository.findAllByClientIdAndCategoryRef_IdOrderByDateDesc(clientId, categoryId)
-                    : repository.findAllByClientIdOrderByDateDesc(clientId);
+                    ? repository.findAllByUserAndCategoryRef_IdOrderByDateDesc(user, categoryId)
+                    : repository.findAllByUserOrderByDateDesc(user);
         }
         return items.stream().map(TransactionService::toResponse).toList();
     }
 
-    public TransactionResponse getOne(UUID id, String clientId) {
-        Transaction e = repository.findByIdAndClientId(id, clientId)
+    public TransactionResponse getOne(UUID id, User user) {
+        Transaction e = repository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new TransactionNotFoundException(id));
         return toResponse(e);
     }
 
     @Transactional
-    public TransactionResponse create(TransactionRequest req, String clientId) {
+    public TransactionResponse create(TransactionRequest req, User user) {
         Transaction e = new Transaction();
-        e.setClientId(clientId);
+        e.setUser(user);
         e.setTitle(req.title());
         e.setAmount(req.amount());
         e.setDate(req.date());
         e.setType(req.type());
-        // If categoryId provided, link to Category (must belong to client)
         if (req.categoryId() != null) {
-            Category cat = categoryRepository.findByIdAndClientId(req.categoryId(), clientId)
+            Category cat = categoryRepository.findByIdAndUser(req.categoryId(), user)
                     .orElseThrow(() -> new CategoryNotFoundException(req.categoryId()));
             e.setCategoryRef(cat);
         } else {
@@ -106,15 +105,15 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponse update(UUID id, TransactionRequest req, String clientId) {
-        Transaction e = repository.findByIdAndClientId(id, clientId)
+    public TransactionResponse update(UUID id, TransactionRequest req, User user) {
+        Transaction e = repository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new TransactionNotFoundException(id));
         e.setTitle(req.title());
         e.setAmount(req.amount());
         e.setDate(req.date());
         e.setType(req.type());
         if (req.categoryId() != null) {
-            Category cat = categoryRepository.findByIdAndClientId(req.categoryId(), clientId)
+            Category cat = categoryRepository.findByIdAndUser(req.categoryId(), user)
                     .orElseThrow(() -> new CategoryNotFoundException(req.categoryId()));
             e.setCategoryRef(cat);
         } else {
@@ -125,11 +124,11 @@ public class TransactionService {
     }
 
     @Transactional
-    public void delete(UUID id, String clientId) {
-        boolean exists = repository.existsByIdAndClientId(id, clientId);
+    public void delete(UUID id, User user) {
+        boolean exists = repository.existsByIdAndUser(id, user);
         if (!exists) {
             throw new TransactionNotFoundException(id);
         }
-        repository.deleteByIdAndClientId(id, clientId);
+        repository.deleteByIdAndUser(id, user);
     }
 }
