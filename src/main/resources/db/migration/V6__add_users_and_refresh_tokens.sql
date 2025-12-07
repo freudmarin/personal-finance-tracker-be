@@ -31,7 +31,11 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 );
 
 -- Remove legacy client_id model from categories and transactions and link to users instead
-ALTER TABLE categories DROP COLUMN IF EXISTS client_id;
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='client_id') THEN
+        ALTER TABLE categories DROP COLUMN client_id;
+    END IF;
+END $$;
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='categories' AND column_name='user_id') THEN
         ALTER TABLE categories ADD COLUMN user_id UUID;
@@ -46,7 +50,11 @@ DO $$ BEGIN
     END IF;
 END $$;
 
-ALTER TABLE transactions DROP COLUMN IF EXISTS client_id;
+DO $$ BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='transactions' AND column_name='client_id') THEN
+        ALTER TABLE transactions DROP COLUMN client_id;
+    END IF;
+END $$;
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='transactions' AND column_name='user_id') THEN
         ALTER TABLE transactions ADD COLUMN user_id UUID;
