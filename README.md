@@ -29,11 +29,3 @@ It allows users to record transactions, which can be either **income** or **expe
 
 - The application uses Flyway for database migrations.
 - Old tables related to expenses have been removed; all financial records are now stored as transactions.
-
-## Contributing
-
-Pull requests are welcome!
-
-## License
-
-MIT
