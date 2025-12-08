@@ -47,7 +47,7 @@ public class AuthenticationService {
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
         var accessToken = jwtService.generateAccessToken(userDetails.getUser());
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUser());
-        return new AuthResponse(accessToken, refreshToken.getToken(), jwtProperties.getAccessTokenExpirationMs());
+        return new AuthResponse(userDetails.getUser().getUsername(), accessToken, refreshToken.getToken(), jwtProperties.getAccessTokenExpirationMs());
     }
 
     @Transactional
@@ -66,7 +66,7 @@ public class AuthenticationService {
             // Authenticate and generate tokens for the new user
             String accessToken = jwtService.generateAccessToken(user);
             RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
-            return new AuthResponse(accessToken, refreshToken.getToken(), jwtProperties.getAccessTokenExpirationMs());
+            return new AuthResponse(user.getUsername(), accessToken, refreshToken.getToken(), jwtProperties.getAccessTokenExpirationMs());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Registration failed");
         }
