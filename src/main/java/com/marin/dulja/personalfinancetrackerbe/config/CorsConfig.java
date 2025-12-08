@@ -7,19 +7,21 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
 public class CorsConfig {
     @Bean
-    public CorsFilter corsFilter(@Value("${spring.profiles.active:}") String profile, @Value("${allowed.origin:personal-finances-01.netlify.app}") String allowedOrigin) {
+    public CorsFilter corsFilter(@Value("${spring.profiles.active:}") String profile,
+                                 @Value("${allowed.origin:https://personal-finances-01.netlify.app}") String allowedOrigin) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
 
         if ("dev".equals(profile)) {
             config.setAllowedOrigins(List.of("http://localhost:5173"));
         } else {
-            config.setAllowedOrigins(List.of(allowedOrigin, "http://localhost:5173")); // fallback to prod origin
+            config.setAllowedOrigins(Arrays.asList(allowedOrigin.split(",")));
         }
 
         config.setAllowedHeaders(List.of("*"));
