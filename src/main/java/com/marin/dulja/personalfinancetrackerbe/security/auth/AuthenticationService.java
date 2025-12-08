@@ -41,7 +41,7 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public AuthResponse login(@Valid AuthRequest request) {
+    public AuthResponse login(@Valid LoginRequest request) {
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
@@ -51,14 +51,15 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public AuthResponse register(@Valid AuthRequest request) {
+    public AuthResponse register(@Valid RegisterRequest request) {
         try {
-            if (userRepository.existsByEmail(request.getEmail())) {
-                // Always return generic error, do not reveal if email exists
+            if (userRepository.existsByEmail(request.getEmail()) || userRepository.existsByUsername(request.getUsername())) {
+                // Always return generic error, do not reveal if email or username exists
                 throw new IllegalArgumentException();
             }
             User user = new User();
             user.setEmail(request.getEmail());
+            user.setUsername(request.getUsername());
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.getRoles().add("ROLE_USER");
             userRepository.save(user);
