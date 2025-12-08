@@ -51,7 +51,7 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public void register(@Valid AuthRequest request) {
+    public AuthResponse register(@Valid AuthRequest request) {
         try {
             if (userRepository.existsByEmail(request.getEmail())) {
                 // Always return generic error, do not reveal if email exists
@@ -62,6 +62,10 @@ public class AuthenticationService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
             user.getRoles().add("ROLE_USER");
             userRepository.save(user);
+            // Authenticate and generate tokens for the new user
+            String accessToken = jwtService.generateAccessToken(user);
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+            return new AuthResponse(accessToken, refreshToken.getToken(), jwtProperties.getAccessTokenExpirationMs());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Registration failed");
         }
