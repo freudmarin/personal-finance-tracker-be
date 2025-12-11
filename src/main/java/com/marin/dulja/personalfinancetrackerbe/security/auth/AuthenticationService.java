@@ -45,9 +45,12 @@ public class AuthenticationService {
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-        var accessToken = jwtService.generateAccessToken(userDetails.getUser());
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getUser());
-        return new AuthResponse(userDetails.getUser().getUsername(), accessToken, refreshToken.getToken(), jwtProperties.getAccessTokenExpirationMs());
+        // Fetch user fresh from database within this transaction
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        var accessToken = jwtService.generateAccessToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        return new AuthResponse(user.getUsername(), accessToken, refreshToken.getToken(), jwtProperties.getAccessTokenExpirationMs());
     }
 
     @Transactional

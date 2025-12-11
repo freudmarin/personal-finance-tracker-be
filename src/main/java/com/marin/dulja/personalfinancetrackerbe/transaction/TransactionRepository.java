@@ -1,6 +1,5 @@
 package com.marin.dulja.personalfinancetrackerbe.transaction;
 
-import com.marin.dulja.personalfinancetrackerbe.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -9,19 +8,19 @@ import java.util.UUID;
 
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 
-    List<Transaction> findAllByUserOrderByDateDesc(User user);
+    List<Transaction> findAllByUser_IdOrderByDateDesc(UUID userId);
 
-    List<Transaction> findAllByUserAndCategoryRef_IdOrderByDateDesc(User user, UUID categoryId);
+    List<Transaction> findAllByUser_IdAndCategoryRef_IdOrderByDateDesc(UUID userId, UUID categoryId);
 
-    Optional<Transaction> findByIdAndUser(UUID id, User user);
+    Optional<Transaction> findByIdAndUser_Id(UUID id, UUID userId);
 
-    boolean existsByIdAndUser(UUID id, User user);
+    boolean existsByIdAndUser_Id(UUID id, UUID userId);
 
-    long deleteByIdAndUser(UUID id, User user);
+    long deleteByIdAndUser_Id(UUID id, UUID userId);
 
-    long deleteByUserAndCategoryRef_Id(User user, UUID categoryId);
+    long deleteByUser_IdAndCategoryRef_Id(UUID userId, UUID categoryId);
 
-    List<Transaction> findAllByUserAndTypeOrderByDateDesc(User user, String type);
+    List<Transaction> findAllByUser_IdAndTypeOrderByDateDesc(UUID userId, String type);
 
-    List<Transaction> findAllByUserAndTypeAndCategoryRef_IdOrderByDateDesc(User user, String type, UUID categoryId);
+    List<Transaction> findAllByUser_IdAndTypeAndCategoryRef_IdOrderByDateDesc(UUID userId, String type, UUID categoryId);
 }

@@ -29,7 +29,7 @@ public class RefreshTokenService {
     }
 
     public RefreshToken verifyToken(String token) {
-        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+        RefreshToken refreshToken = refreshTokenRepository.findByTokenWithUser(token)
                 .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
         if (refreshToken.isRevoked() || refreshToken.getExpiryDate().isBefore(Instant.now())) {
             throw new BadCredentialsException("Refresh token is expired or revoked");

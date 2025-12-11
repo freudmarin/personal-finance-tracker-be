@@ -55,45 +55,47 @@ public class TransactionService {
         return String.join(",", cleaned);
     }
 
-    public List<TransactionResponse> list(User user) {
-        return repository.findAllByUserOrderByDateDesc(user)
+    public List<TransactionResponse> list(UUID userId) {
+        return repository.findAllByUser_IdOrderByDateDesc(userId)
                 .stream()
                 .map(TransactionService::toResponse)
                 .toList();
     }
 
-    public List<TransactionResponse> list(User user, String type, UUID categoryId) {
+    public List<TransactionResponse> list(UUID userId, String type, UUID categoryId) {
         List<Transaction> items;
         if (type != null && !type.isBlank()) {
             if (categoryId != null) {
-                items = repository.findAllByUserAndTypeAndCategoryRef_IdOrderByDateDesc(user, type, categoryId);
+                items = repository.findAllByUser_IdAndTypeAndCategoryRef_IdOrderByDateDesc(userId, type, categoryId);
             } else {
-                items = repository.findAllByUserAndTypeOrderByDateDesc(user, type);
+                items = repository.findAllByUser_IdAndTypeOrderByDateDesc(userId, type);
             }
         } else {
             items = (categoryId != null)
-                    ? repository.findAllByUserAndCategoryRef_IdOrderByDateDesc(user, categoryId)
-                    : repository.findAllByUserOrderByDateDesc(user);
+                    ? repository.findAllByUser_IdAndCategoryRef_IdOrderByDateDesc(userId, categoryId)
+                    : repository.findAllByUser_IdOrderByDateDesc(userId);
         }
         return items.stream().map(TransactionService::toResponse).toList();
     }
 
-    public TransactionResponse getOne(UUID id, User user) {
-        Transaction e = repository.findByIdAndUser(id, user)
+    public TransactionResponse getOne(UUID id, UUID userId) {
+        Transaction e = repository.findByIdAndUser_Id(id, userId)
                 .orElseThrow(() -> new TransactionNotFoundException(id));
         return toResponse(e);
     }
 
     @Transactional
-    public TransactionResponse create(TransactionRequest req, User user) {
+    public TransactionResponse create(TransactionRequest req, UUID userId) {
         Transaction e = new Transaction();
+        User user = new User();
+        user.setId(userId);
         e.setUser(user);
         e.setTitle(req.title());
         e.setAmount(req.amount());
         e.setDate(req.date());
         e.setType(req.type());
         if (req.categoryId() != null) {
-            Category cat = categoryRepository.findByIdAndUser(req.categoryId(), user)
+            Category cat = categoryRepository.findByIdAndUser_Id(req.categoryId(), userId)
                     .orElseThrow(() -> new CategoryNotFoundException(req.categoryId()));
             e.setCategoryRef(cat);
         } else {
@@ -105,15 +107,15 @@ public class TransactionService {
     }
 
     @Transactional
-    public TransactionResponse update(UUID id, TransactionRequest req, User user) {
-        Transaction e = repository.findByIdAndUser(id, user)
+    public TransactionResponse update(UUID id, TransactionRequest req, UUID userId) {
+        Transaction e = repository.findByIdAndUser_Id(id, userId)
                 .orElseThrow(() -> new TransactionNotFoundException(id));
         e.setTitle(req.title());
         e.setAmount(req.amount());
         e.setDate(req.date());
         e.setType(req.type());
         if (req.categoryId() != null) {
-            Category cat = categoryRepository.findByIdAndUser(req.categoryId(), user)
+            Category cat = categoryRepository.findByIdAndUser_Id(req.categoryId(), userId)
                     .orElseThrow(() -> new CategoryNotFoundException(req.categoryId()));
             e.setCategoryRef(cat);
         } else {
@@ -124,11 +126,11 @@ public class TransactionService {
     }
 
     @Transactional
-    public void delete(UUID id, User user) {
-        boolean exists = repository.existsByIdAndUser(id, user);
+    public void delete(UUID id, UUID userId) {
+        boolean exists = repository.existsByIdAndUser_Id(id, userId);
         if (!exists) {
             throw new TransactionNotFoundException(id);
         }
-        repository.deleteByIdAndUser(id, user);
+        repository.deleteByIdAndUser_Id(id, userId);
     }
 }

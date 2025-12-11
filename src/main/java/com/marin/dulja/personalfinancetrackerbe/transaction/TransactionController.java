@@ -29,21 +29,21 @@ public class TransactionController {
     public List<TransactionResponse> list(@AuthenticationPrincipal CustomUserDetails userDetails,
                                       @RequestParam(value = "categoryId", required = false) UUID categoryId,
                                       @RequestParam(value = "type", required = false) String type) {
-        return service.list(userDetails.getUser(), type, categoryId);
+        return service.list(userDetails.getUserId(), type, categoryId);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public TransactionResponse getOne(@PathVariable UUID id,
                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return service.getOne(id, userDetails.getUser());
+        return service.getOne(id, userDetails.getUserId());
     }
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<TransactionResponse> create(@Valid @RequestBody TransactionRequest req,
                                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
-        TransactionResponse saved = service.create(req, userDetails.getUser());
+        TransactionResponse saved = service.create(req, userDetails.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -52,14 +52,14 @@ public class TransactionController {
     public TransactionResponse update(@PathVariable UUID id,
                                       @Valid @RequestBody TransactionRequest req,
                                       @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return service.update(id, req, userDetails.getUser());
+        return service.update(id, req, userDetails.getUserId());
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(@PathVariable UUID id,
                                        @AuthenticationPrincipal CustomUserDetails userDetails) {
-        service.delete(id, userDetails.getUser());
+        service.delete(id, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 }

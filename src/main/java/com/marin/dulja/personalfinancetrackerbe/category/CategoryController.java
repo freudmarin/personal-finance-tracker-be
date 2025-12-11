@@ -27,14 +27,14 @@ public class CategoryController {
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public List<CategoryResponse> list(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return service.list(userDetails.getUser());
+        return service.list(userDetails.getUserId());
     }
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest req,
                                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
-        CategoryResponse saved = service.create(req, userDetails.getUser());
+        CategoryResponse saved = service.create(req, userDetails.getUserId());
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -43,14 +43,14 @@ public class CategoryController {
     public CategoryResponse update(@PathVariable UUID id,
                                    @Valid @RequestBody CategoryRequest req,
                                    @AuthenticationPrincipal CustomUserDetails userDetails) {
-        return service.update(id, req, userDetails.getUser());
+        return service.update(id, req, userDetails.getUserId());
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> delete(@PathVariable UUID id,
                                        @AuthenticationPrincipal CustomUserDetails userDetails) {
-        service.delete(id, userDetails.getUser());
+        service.delete(id, userDetails.getUserId());
         return ResponseEntity.noContent().build();
     }
 }
