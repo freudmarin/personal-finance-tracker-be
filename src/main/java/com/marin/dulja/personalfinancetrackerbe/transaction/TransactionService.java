@@ -7,6 +7,8 @@ import com.marin.dulja.personalfinancetrackerbe.category.dto.CategoryResponse;
 import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionRequest;
 import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionResponse;
 import com.marin.dulja.personalfinancetrackerbe.user.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,8 @@ import java.util.UUID;
 @Service
 @Transactional(readOnly = true)
 public class TransactionService {
+
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
     private final TransactionRepository repository;
     private final CategoryRepository categoryRepository;
@@ -56,13 +60,17 @@ public class TransactionService {
     }
 
     public List<TransactionResponse> list(UUID userId) {
-        return repository.findAllByUser_IdOrderByDateDesc(userId)
+        log.debug("Listing all transactions for userId: {}", userId);
+        List<TransactionResponse> result = repository.findAllByUser_IdOrderByDateDesc(userId)
                 .stream()
                 .map(TransactionService::toResponse)
                 .toList();
+        log.debug("Found {} transactions for userId: {}", result.size(), userId);
+        return result;
     }
 
     public List<TransactionResponse> list(UUID userId, String type, UUID categoryId) {
+        log.debug("Listing transactions for userId: {}, type: {}, categoryId: {}", userId, type, categoryId);
         List<Transaction> items;
         if (type != null && !type.isBlank()) {
             if (categoryId != null) {
@@ -75,7 +83,9 @@ public class TransactionService {
                     ? repository.findAllByUser_IdAndCategoryRef_IdOrderByDateDesc(userId, categoryId)
                     : repository.findAllByUser_IdOrderByDateDesc(userId);
         }
-        return items.stream().map(TransactionService::toResponse).toList();
+        List<TransactionResponse> result = items.stream().map(TransactionService::toResponse).toList();
+        log.debug("Found {} transactions for userId: {}", result.size(), userId);
+        return result;
     }
 
     public TransactionResponse getOne(UUID id, UUID userId) {

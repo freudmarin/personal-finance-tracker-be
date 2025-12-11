@@ -1,6 +1,9 @@
 package com.marin.dulja.personalfinancetrackerbe.transaction;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -8,19 +11,29 @@ import java.util.UUID;
 
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
 
-    List<Transaction> findAllByUser_IdOrderByDateDesc(UUID userId);
+    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId ORDER BY t.date DESC")
+    List<Transaction> findAllByUser_IdOrderByDateDesc(@Param("userId") UUID userId);
 
-    List<Transaction> findAllByUser_IdAndCategoryRef_IdOrderByDateDesc(UUID userId, UUID categoryId);
+    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.categoryRef.id = :categoryId ORDER BY t.date DESC")
+    List<Transaction> findAllByUser_IdAndCategoryRef_IdOrderByDateDesc(@Param("userId") UUID userId, @Param("categoryId") UUID categoryId);
 
-    Optional<Transaction> findByIdAndUser_Id(UUID id, UUID userId);
+    @Query("SELECT t FROM Transaction t WHERE t.id = :id AND t.user.id = :userId")
+    Optional<Transaction> findByIdAndUser_Id(@Param("id") UUID id, @Param("userId") UUID userId);
 
-    boolean existsByIdAndUser_Id(UUID id, UUID userId);
+    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Transaction t WHERE t.id = :id AND t.user.id = :userId")
+    boolean existsByIdAndUser_Id(@Param("id") UUID id, @Param("userId") UUID userId);
 
-    long deleteByIdAndUser_Id(UUID id, UUID userId);
+    @Modifying
+    @Query("DELETE FROM Transaction t WHERE t.id = :id AND t.user.id = :userId")
+    long deleteByIdAndUser_Id(@Param("id") UUID id, @Param("userId") UUID userId);
 
-    long deleteByUser_IdAndCategoryRef_Id(UUID userId, UUID categoryId);
+    @Modifying
+    @Query("DELETE FROM Transaction t WHERE t.user.id = :userId AND t.categoryRef.id = :categoryId")
+    long deleteByUser_IdAndCategoryRef_Id(@Param("userId") UUID userId, @Param("categoryId") UUID categoryId);
 
-    List<Transaction> findAllByUser_IdAndTypeOrderByDateDesc(UUID userId, String type);
+    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.type = :type ORDER BY t.date DESC")
+    List<Transaction> findAllByUser_IdAndTypeOrderByDateDesc(@Param("userId") UUID userId, @Param("type") String type);
 
-    List<Transaction> findAllByUser_IdAndTypeAndCategoryRef_IdOrderByDateDesc(UUID userId, String type, UUID categoryId);
+    @Query("SELECT t FROM Transaction t WHERE t.user.id = :userId AND t.type = :type AND t.categoryRef.id = :categoryId ORDER BY t.date DESC")
+    List<Transaction> findAllByUser_IdAndTypeAndCategoryRef_IdOrderByDateDesc(@Param("userId") UUID userId, @Param("type") String type, @Param("categoryId") UUID categoryId);
 }

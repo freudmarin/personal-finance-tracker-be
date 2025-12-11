@@ -4,6 +4,8 @@ import com.marin.dulja.personalfinancetrackerbe.security.CustomUserDetails;
 import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionRequest;
 import com.marin.dulja.personalfinancetrackerbe.transaction.dto.TransactionResponse;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +20,8 @@ import java.util.UUID;
 @PreAuthorize("isAuthenticated()")
 public class TransactionController {
 
+    private static final Logger log = LoggerFactory.getLogger(TransactionController.class);
+
     private final TransactionService service;
 
     public TransactionController(TransactionService service) {
@@ -29,7 +33,9 @@ public class TransactionController {
     public List<TransactionResponse> list(@AuthenticationPrincipal CustomUserDetails userDetails,
                                       @RequestParam(value = "categoryId", required = false) UUID categoryId,
                                       @RequestParam(value = "type", required = false) String type) {
-        return service.list(userDetails.getUserId(), type, categoryId);
+        UUID userId = userDetails.getUserId();
+        log.debug("GET /api/transactions - Authenticated user ID: {}, username: {}", userId, userDetails.getUsername());
+        return service.list(userId, type, categoryId);
     }
 
     @GetMapping("/{id}")
